@@ -9,23 +9,47 @@ export function page4Handlers() {
 }
 
 
-function findQuote() {
+async function findQuote() {
   const id = getIdFromInputField()
-  fetch(`${SERVER_URL}/${id}`)
-    .then(res => {
-      if (!res.ok) {
-        throw new Error("Could not find quote (")
+     try{
+       const findQuote = await fetch(`${SERVER_URL}/${id}`)
+           if(!findQuote.ok){
+              throw new Error("Could not find quote")
+           }
+       const quote = await findQuote.json()
+       document.getElementById("quote").value = quote.quote
+       document.getElementById("author").value = quote.ref
+
+     }catch(errorMessage){
+      document.getElementById("error-message").innerText = errorMessage
+     }
+}
+async function editQuote() {
+  const id = getIdFromInputField()
+  const editedQuote = {
+    id: id
+  }
+  editedQuote.quote = document.getElementById("quote").value
+  editedQuote.ref = document.getElementById("author").value
+  try {
+    const editQuote = await fetch(`${SERVER_URL}/${id}`,{
+        method: "PUT",
+        headers: {
+      "Accept": "application/json",
+          "Content-type": "application/json"
+    },
+    body: JSON.stringify(editedQuote)})
+    const editAQuote = await editQuote.json()
+      if (!editAQuote.ok) {
+        throw new Error("Could not edit quote")
       }
-      return res.json()
-    })
-    .then(foundQuote => {
-      document.getElementById("quote").value = foundQuote.quote
-      document.getElementById("author").value = foundQuote.ref
-    })
-    .catch(e => alert(e.message + " (NEVER use alerts for real)"))
+
+  }catch (errorEditMessage){
+    document.getElementById("error-edit-message").innerText = errorEditMessage
+  }
 }
 
-function editQuote() {
+function midlertidigEditQuote() {
   const id = getIdFromInputField()
   const editedQuote = {
     id: id
